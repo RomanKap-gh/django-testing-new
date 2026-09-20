@@ -1,14 +1,19 @@
 from datetime import date, datetime, timedelta
+
 import pytest
-from django.utils import timezone
 from django.test import Client
 from django.urls import reverse
+from django.utils import timezone
 
 from news.models import Comment, News
 
-
 NOTES_ON_PAGE = 10
 COUNT_COMMENTS = 5
+
+
+@pytest.fixture(autouse=True)
+def enable_db_access_for_all_tests(db):
+    pass
 
 
 @pytest.fixture
@@ -85,10 +90,8 @@ def test_comments(test_news, author, db):
 
 
 @pytest.fixture
-def news_url(test_news):
-    return {
-        'url_detail': reverse("news:detail", kwargs={"pk": test_news.pk}),
-    }
+def news_url_detail(test_news):
+    return reverse("news:detail", kwargs={"pk": test_news.pk})
 
 
 @pytest.fixture
@@ -96,4 +99,14 @@ def comment_urls(test_comment):
     return {
         'url_edit': reverse('news:edit', kwargs={'pk': test_comment.pk}),
         'url_delete': reverse('news:delete', kwargs={'pk': test_comment.pk}),
+    }
+
+
+@pytest.fixture
+def static_urls():
+    return {
+        'url_home': reverse('news:home'),
+        'url_login': reverse('users:login'),
+        'url_logout': reverse('users:logout'),
+        'url_signup': reverse('users:signup'),
     }
