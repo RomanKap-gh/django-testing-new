@@ -24,32 +24,42 @@ def test_public_page_detail_is_available(client, news_url_detail):
     assert response.status_code == HTTPStatus.OK
 
 
-@pytest.mark.parametrize(
-    'url_name',
-    ('url_edit', 'url_delete'),
-)
-def test_pages_edit_and_delete_are_available_to_author(
-    comment_urls,
+def test_page_edit_is_available_to_author(
     author_client,
-    url_name,
+    comment_urls,
 ):
 
-    response = author_client.get(comment_urls[url_name])
+    response = author_client.get(comment_urls['url_edit'])
 
     assert response.status_code == HTTPStatus.OK
 
 
-@pytest.mark.parametrize(
-    'url_name',
-    ('url_edit', 'url_delete'),
-)
-def test_pages_edit_and_delete_are_unavailable_to_reader(
+def test_page_delete_is_available_to_author(
+    author_client,
     comment_urls,
-    reader_client,
-    url_name
 ):
 
-    response = reader_client.get(comment_urls[url_name])
+    response = author_client.get(comment_urls['url_delete'])
+
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_page_edit_is_unavailable_to_reader(
+    reader_client,
+    comment_urls,
+):
+
+    response = reader_client.get(comment_urls['url_edit'])
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+
+
+def test_page_delete_is_unavailable_to_reader(
+    reader_client,
+    comment_urls,
+):
+
+    response = reader_client.get(comment_urls['url_delete'])
 
     assert response.status_code == HTTPStatus.NOT_FOUND
 
@@ -59,10 +69,10 @@ def test_pages_edit_and_delete_are_unavailable_to_reader(
     ('url_edit', 'url_delete'),
 )
 def test_anonymous_user_is_redirected_to_login(
-    comment_urls,
     client,
-    url_name,
     static_urls,
+    comment_urls,
+    url_name,
 ):
     login_url = static_urls['url_login']
 
@@ -71,17 +81,6 @@ def test_anonymous_user_is_redirected_to_login(
     response = client.get(comment_urls[url_name])
 
     assertRedirects(response, expected_url)
-
-
-def test_logout_accepts_post_request(
-    author_client,
-    static_urls,
-):
-
-    response = author_client.post(static_urls['url_logout'])
-
-    assert response.status_code == HTTPStatus.OK
-    assert '_auth_user_id' not in author_client.session
 
 
 def test_logout_rejects_get_request(
@@ -95,9 +94,9 @@ def test_logout_rejects_get_request(
 
 
 def test_success_redirect_after_edit_comment(
+    author_client,
     news_url_detail,
     comment_urls,
-    author_client,
 ):
     response = author_client.post(comment_urls['url_edit'], data=FORM_DATA)
 
@@ -105,9 +104,9 @@ def test_success_redirect_after_edit_comment(
 
 
 def test_success_redirect_after_delete_comment(
+    author_client,
     news_url_detail,
     comment_urls,
-    author_client,
 ):
     response = author_client.post(comment_urls['url_delete'])
 

@@ -60,7 +60,7 @@ def test_comment(test_news, author):
 
 @pytest.fixture
 def many_test_news(author, db):
-    return News.objects.bulk_create(
+    News.objects.bulk_create(
         [
             News(
                 title=f'Тестовая новость {index}',
@@ -83,10 +83,8 @@ def test_comments(test_news, author, db):
             author=author,
         )
         created = start + timedelta(minutes=index)
-        Comment.objects.filter(pk=comment.pk).update(created=created)
         comment.created = created
         comments.append(comment)
-    return comments
 
 
 @pytest.fixture

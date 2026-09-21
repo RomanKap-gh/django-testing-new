@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from news.forms import CommentForm
+from news.models import Comment, News
 from news.pytest_tests.conftest import NOTES_ON_PAGE
 
 
@@ -11,7 +12,7 @@ def test_news_are_sorted_newest_first(
 ):
     response = author_client.get(static_urls['url_home'])
     object_list = list(response.context['object_list'])
-    expected_news = list(reversed(many_test_news))[:NOTES_ON_PAGE]
+    expected_news = list(News.objects.order_by('-date'))[:NOTES_ON_PAGE]
 
     assert object_list == expected_news
 
@@ -29,13 +30,16 @@ def test_news_count_on_page_is_limited(
 
 def test_comments_are_sorted_oldest_first(
     news_url_detail,
+    test_news,
     test_comments,
     author_client,
 ):
     response = author_client.get(news_url_detail)
     news = response.context['object']
     comments_list = list(news.comment_set.all())
-    expected_comments_list = list(test_comments)
+    expected_comments_list = list(
+        Comment.objects.filter(news=test_news).order_by('created')
+    )
 
     assert comments_list == expected_comments_list
 

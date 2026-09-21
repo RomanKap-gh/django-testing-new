@@ -138,3 +138,14 @@ def test_reader_cannot_delete_comment(
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert test_news.comment_set.filter(pk=test_comment.pk).exists()
+
+
+def test_logout_accepts_post_request(
+    author_client,
+    static_urls,
+):
+
+    response = author_client.post(static_urls['url_logout'])
+
+    assert response.status_code == HTTPStatus.OK
+    assert '_auth_user_id' not in author_client.session
