@@ -16,7 +16,7 @@ def test_creating_comment_is_unavailable_to_anonymous_user(
     test_news,
 ):
     comments_before = test_news.comment_set.count()
-    response = client.post(news_url_detail, data=FORM_DATA)
+    response = client.post(news_url_detail['url_detail'], data=FORM_DATA)
     comments_after = test_news.comment_set.count()
 
     assert response.status_code == HTTPStatus.FOUND
@@ -29,9 +29,12 @@ def test_success_creating_comment_by_authenticated_user(
     reader,
     test_news,
 ):
-    response = reader_client.post(news_url_detail, data=FORM_DATA)
+    response = reader_client.post(
+        news_url_detail['url_detail'],
+        data=FORM_DATA
+    )
 
-    assertRedirects(response, news_url_detail + '#comments')
+    assertRedirects(response, news_url_detail['url_detail'] + '#comments')
     assert test_news.comment_set.count() == 1
     comment = test_news.comment_set.get()
     assert comment.text == FORM_DATA['text']
@@ -52,7 +55,10 @@ def test_correction_text_in_comment_after_creating(
     form_data = FORM_DATA | {'text': incorrect_word}
     comments_count = test_news.comment_set.count()
 
-    response = author_client.post(news_url_detail, data=form_data)
+    response = author_client.post(
+        news_url_detail['url_detail'],
+        data=form_data
+    )
 
     form = response.context['form']
 
@@ -140,12 +146,23 @@ def test_reader_cannot_delete_comment(
     assert test_news.comment_set.filter(pk=test_comment.pk).exists()
 
 
-def test_logout_accepts_post_request(
+@pytest.mark.parametrize(
+    'url_name',
+    ('url_edit', 'url_delete'),
+)
+def test_success_redirect_after_edit_comment(
     author_client,
-    static_urls,
+    news_url_detail,
+    comment_urls,
+    url_name,
 ):
+    """
+    Согласно заданию в блоке логики: "После успешного создания,
+    изменения или удаления выполняется редирект к странице новости
+    с якорем #comments". К тому же POST запрос.
+    """
+    expected_url = news_url_detail['url_detail'] + '#comments'
 
-    response = author_client.post(static_urls['url_logout'])
+    response = author_client.post(comment_urls[url_name], data=FORM_DATA)
 
-    assert response.status_code == HTTPStatus.OK
-    assert '_auth_user_id' not in author_client.session
+    assertRedirects(response, expected_url)

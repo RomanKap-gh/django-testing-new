@@ -75,7 +75,6 @@ def many_test_news(author, db):
 @pytest.fixture
 def test_comments(test_news, author, db):
     start = timezone.make_aware(datetime(2026, 11, 1, 12, 0, 0))
-    comments = []
     for index in range(COUNT_COMMENTS):
         comment = Comment.objects.create(
             news=test_news,
@@ -84,12 +83,14 @@ def test_comments(test_news, author, db):
         )
         created = start + timedelta(minutes=index)
         comment.created = created
-        comments.append(comment)
+        comment.save()
 
 
 @pytest.fixture
 def news_url_detail(test_news):
-    return reverse("news:detail", kwargs={"pk": test_news.pk})
+    return {
+        'url_detail': reverse("news:detail", kwargs={"pk": test_news.pk}),
+    }
 
 
 @pytest.fixture

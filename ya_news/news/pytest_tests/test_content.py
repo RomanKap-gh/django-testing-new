@@ -34,7 +34,7 @@ def test_comments_are_sorted_oldest_first(
     test_comments,
     author_client,
 ):
-    response = author_client.get(news_url_detail)
+    response = author_client.get(news_url_detail['url_detail'])
     news = response.context['object']
     comments_list = list(news.comment_set.all())
     expected_comments_list = list(
@@ -48,7 +48,7 @@ def test_form_is_unavailable_to_anonymous_user(
     news_url_detail,
     client,
 ):
-    response = client.get(news_url_detail)
+    response = client.get(news_url_detail['url_detail'])
 
     assert response.status_code == HTTPStatus.OK
     assert 'form' not in response.context
@@ -58,7 +58,7 @@ def test_form_is_available_to_authenticated_user(
     news_url_detail,
     author_client,
 ):
-    response = author_client.get(news_url_detail)
+    response = author_client.get(news_url_detail['url_detail'])
 
     assert response.status_code == HTTPStatus.OK
     assert isinstance(response.context['form'], CommentForm)
